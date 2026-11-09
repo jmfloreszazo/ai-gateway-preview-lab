@@ -45,7 +45,7 @@ $files = @(
     foreach ($name in @('.gitignore', '.gitattributes', '.editorconfig', 'AiGateway.sln',
         'Directory.Build.props', 'LICENSE', 'README.md', 'global.json')) {
         $path = Join-Path $RepositoryRoot $name
-        if (Test-Path $path -PathType Leaf) { Get-Item $path }
+        if (Test-Path $path -PathType Leaf) { Get-Item -LiteralPath $path -Force }
     }
     foreach ($directory in @('.github', 'infra', 'scripts', 'src', 'tests', 'docs')) {
         $path = Join-Path $RepositoryRoot $directory
