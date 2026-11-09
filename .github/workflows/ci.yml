@@ -1,0 +1,85 @@
+name: ci
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bicep:
+    name: Bicep build y lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar Bicep
+        run: az bicep install
+
+      - name: Compilar y analizar
+        run: bash tests/01-bicep-lint.sh
+
+      - name: Comprobar el contrato de observabilidad sin desplegar
+        shell: pwsh
+        run: ./tests/04-observability-contract.ps1
+
+  dotnet:
+    name: .NET build y pruebas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restaurar
+        run: dotnet restore AiGateway.sln
+
+      - name: Compilar
+        run: dotnet build AiGateway.sln --configuration Release --no-restore
+
+      - name: Probar
+        run: dotnet test AiGateway.sln --configuration Release --no-build --verbosity normal
+
+  python:
+    name: Python sintaxis y contrato
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependencias
+        run: python -m pip install -r src/python/requirements.txt
+
+      - name: Comprobar sintaxis
+        run: python -m compileall -q src/python
+
+      - name: Probar el cliente sin llamadas reales
+        run: python -m unittest discover -s tests -p test_python_gateway.py -v
+
+  powershell:
+    name: Contrato PowerShell local
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Probar el script sin llamadas reales
+        shell: pwsh
+        run: ./tests/03-powershell-contract.ps1
+
+  publication:
+    name: Comprobar material publicable
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Identificadores, secretos reconocibles y metadatos de imagen
+        shell: pwsh
+        run: ./scripts/04-prepare-publication.ps1 -CheckOnly

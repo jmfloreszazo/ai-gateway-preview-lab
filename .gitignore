@@ -1,0 +1,45 @@
+# .NET and IDE files
+[Bb]in/
+[Oo]bj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local configuration and private Azure data
+.env
+.env.*
+.azure/
+*.local.*
+
+# Credentials and private keys
+*.pem
+*.key
+*.pfx
+*.p12
+*.publishsettings
+
+# Private evidence, generated archives and test output
+evidence/
+publication/
+TestResults/
+coverage/
+.coverage
+.coverage.*
+*.coverage
+*.coveragexml
+
+# OS files
+.DS_Store
+Thumbs.db

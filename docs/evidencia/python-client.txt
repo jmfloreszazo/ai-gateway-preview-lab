@@ -1,0 +1,25 @@
+modelo solicitado : chat-principal
+modelo que atendio: gpt-6.1-sol-2026-09-29
+latencia          : 14735 ms
+tokens            : prompt 26 / salida 394 / total 420
+
+Un **gateway de IA gobierna el acceso y el tráfico entre aplicaciones y modelos**. No gobierna, por sí solo, todo el sistema de IA.
+
+### Qué puede gobernar
+- **Acceso:** quién puede usar qué modelos y con qué permisos.
+- **Tráfico:** límites de peticiones, cuotas, concurrencia y prioridades.
+- **Enrutamiento:** proveedor o modelo elegido, reintentos y alternativas ante fallos.
+- **Costes:** presupuestos, consumo de tokens y restricciones por equipo.
+- **Datos en tránsito:** detección o anonimización de datos sensibles, según su configuración.
+- **Políticas de entrada y salida:** filtros de contenido, validaciones y bloqueo de solicitudes o respuestas.
+- **Trazabilidad:** registros, métricas y auditoría de las llamadas que pasan por él.
+
+### Qué no gobierna por sí solo
+- **El entrenamiento, los pesos o el funcionamiento interno del modelo.**
+- **La veracidad de sus respuestas:** puede validar o filtrar, pero no garantizar que sean correctas.
+- **El comportamiento completo de un agente:** decisiones, memoria y uso de herramientas requieren controles adicionales.
+- **Los permisos reales sobre sistemas externos:** los deben aplicar también las herramientas y los servicios de destino.
+- **Las llamadas que lo evitan** o los datos que ya llegaron al proveedor.
+- **El cumplimiento normativo completo:** aporta controles y evidencias, pero no sustituye la gobernanza organizativa.
+
+**En resumen:** gobierna **cómo se consume la IA**, no necesariamente **cómo funciona ni todo lo que hace**. Su alcance depende de qué tráfico pasa por él y qué controles tiene habilitados.

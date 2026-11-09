@@ -1,0 +1,6 @@
+modelo solicitado : chat-principal
+modelo que atendio: gpt-6.1-sol-2026-09-29
+latencia          : 2501 ms
+tokens            : prompt 29 / salida 6 / total 35
+
+gateway-ok.

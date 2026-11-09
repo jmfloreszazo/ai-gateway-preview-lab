@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>AiGateway.Core</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    Sin paquetes a proposito. El gateway expone un endpoint compatible con OpenAI,
+    de modo que HttpClient basta para demostrar la frontera.
+    El recurso actual usa Authorization: Bearer. El tier anterior usa api-key;
+    solo se selecciona con AI_GATEWAY_AUTH_MODE=api-key.
+  -->
+
+</Project>

@@ -1,0 +1,72 @@
+{
+  "dateUtc": "2026-11-09",
+  "identifiersRedacted": true,
+  "deployment": {
+    "location": "eastus2",
+    "mode": "Incremental",
+    "destinationProvisioningState": "Succeeded",
+    "exporterProvisioningState": "Succeeded",
+    "destinationWhatIf": { "create": 3, "modify": 0, "delete": 0 },
+    "foundryRedeployed": false,
+    "modelsRedeployed": false,
+    "gatewayRedeployed": false,
+    "labResourceTypes": [
+      "Microsoft.OperationalInsights/workspaces",
+      "Microsoft.Insights/components",
+      "Microsoft.Portal/dashboards",
+      "Microsoft.ApiManagement/aigateways/workspaces/telemetryExporters"
+    ],
+    "managedOtlpResourceTypes": [
+      "Microsoft.Monitor/accounts",
+      "Microsoft.Insights/dataCollectionRules",
+      "Microsoft.Insights/dataCollectionEndpoints"
+    ]
+  },
+  "telemetry": {
+    "exporterKind": "OpenTelemetry",
+    "authentication": "ManagedIdentity",
+    "configuredSignals": ["metrics", "logs", "traces"],
+    "verifiedIngestedSignals": ["logs", "traces"],
+    "applicationInsightsLocalAuthDisabled": true,
+    "payloadCapture": false,
+    "additionalClaimAttributes": [],
+    "publisherRole": "Monitoring Metrics Publisher",
+    "publisherRoleScope": "managed Data Collection Rule only",
+    "liveRoleAssignmentVerified": true,
+    "logRetentionInDays": 30,
+    "logDailyQuotaGb": 1,
+    "dailyQuotaIsTotalSpendingCap": false
+  },
+  "inference": {
+    "timestampUtc": "2026-11-09T16:10:13.3800709Z",
+    "validInferenceCount": 1,
+    "statusCode": 200,
+    "requestedAlias": "chat-principal",
+    "servedModel": "gpt-6.1-sol-2026-09-29",
+    "maxCompletionTokens": 1024,
+    "promptTokens": 13,
+    "completionTokens": 5,
+    "totalTokens": 18,
+    "clientElapsedMilliseconds": 9734,
+    "serverSpanDurationMilliseconds": 2529.9009,
+    "allSmokeChecksPassed": true
+  },
+  "ingestion": {
+    "OTelLogsRecords": 1,
+    "OTelSpansRecords": 7,
+    "serverModelRequestCount": 1,
+    "tokensFromLogs": { "requests": 1, "input": 13, "output": 5, "total": 18 },
+    "portalKqlResultVerified": true,
+    "dashboardPanelsRendered": 4,
+    "dashboardLookbackHours": 24
+  },
+  "screenshots": [
+    "docs/capturas/05-appinsights.png",
+    "docs/capturas/06-log-analytics.png",
+    "docs/capturas/07-dashboard.png"
+  ],
+  "screenshotsVisuallyReviewed": true,
+  "original473TokenEvidenceRewritten": false,
+  "notVerified": ["PromQL query", "billing reconciliation", "load or performance benchmark"],
+  "omitted": ["resource names and IDs", "tenant and subscription", "endpoints", "account identities", "credentials", "local paths"]
+}

@@ -1,0 +1,83 @@
+{
+  "dateUtc": "2026-11-09",
+  "identifiersRedacted": true,
+  "deploymentState": "Succeeded",
+  "gatewayLocation": "eastus2",
+  "gatewaySku": "Standard",
+  "resourceApiVersion": "2026-11-01",
+  "configurationApiVersion": "2025-09-01-preview",
+  "backendAuthentication": "ManagedIdentity",
+  "runtimeAuthentication": "Authorization: Bearer",
+  "requestedAlias": "chat-principal",
+  "servedModel": "gpt-6.1-sol-2026-09-29",
+  "newFoundryAccounts": 0,
+  "newModelDeployments": 0,
+  "validInferenceCount": 3,
+  "maxCompletionTokensPerRequest": 1024,
+  "totalTokens": 473,
+  "liveTests": [
+    {
+      "client": "PowerShell",
+      "missingKeyStatus": 401,
+      "invalidKeyStatus": 401,
+      "unknownModelStatus": 404,
+      "validStatus": 200,
+      "promptTokens": 13,
+      "completionTokens": 5,
+      "totalTokens": 18,
+      "elapsedMilliseconds": 2989,
+      "passed": true
+    },
+    {
+      "client": "C#",
+      "missingKeyStatus": null,
+      "invalidKeyStatus": null,
+      "unknownModelStatus": null,
+      "validStatus": null,
+      "promptTokens": 29,
+      "completionTokens": 6,
+      "totalTokens": 35,
+      "elapsedMilliseconds": 2501,
+      "passed": true
+    },
+    {
+      "client": "Python",
+      "missingKeyStatus": null,
+      "invalidKeyStatus": null,
+      "unknownModelStatus": null,
+      "validStatus": null,
+      "promptTokens": 26,
+      "completionTokens": 394,
+      "totalTokens": 420,
+      "elapsedMilliseconds": 14735,
+      "passed": true
+    }
+  ],
+  "localValidation": {
+    "dotnetTestsPassed": 25,
+    "pythonTestsPassed": 7,
+    "powershellSimulatedCasesPassed": 9,
+    "dotnetReleaseBuild": "Succeeded",
+    "bicepBuildAndLintExitCode": 0,
+    "azureValidation": "Succeeded",
+    "checkov": "Not installed; exception explicitly accepted by the user",
+    "bicepWarnings": "BCP081: local types unavailable for the new gateway and configuration resources"
+  },
+  "initialWhatIf": {
+    "create": 6,
+    "modify": 0,
+    "delete": 0,
+    "foundryAccountAndProject": "Ignore"
+  },
+  "pricingConfirmed": false,
+  "integratedPortalMetricsConfigured": false,
+  "omitted": [
+    "resource names",
+    "resource IDs",
+    "tenant and subscription",
+    "account identities",
+    "endpoints",
+    "runtime key metadata",
+    "local paths"
+  ]
+}
