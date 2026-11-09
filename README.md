@@ -2,10 +2,7 @@
 
 Ejemplo de [jmfloreszazo](https://github.com/jmfloreszazo), con licencia MIT, para desplegar
 y verificar un AI Gateway en tu propia suscripción. Incluye plantillas de Application Insights,
-Log Analytics y un dashboard de Azure Portal. No necesitas acceso al entorno ni a las credenciales del autor.
-
-La publicación es directamente en GitHub. El control de publicación es de solo lectura:
-no crea ZIP, manifiestos ni copias de evidencias, y no hace commits ni subidas.
+Log Analytics y un dashboard de Azure Portal.
 
 El laboratorio verifica acceso, enrutado y contabilidad de tokens contra AI Gateway.
 El recurso actual es `Microsoft.ApiManagement/aigateways` y autentica las claves de runtime
@@ -16,11 +13,11 @@ Hay dos rutas con alcances distintos: `infra/main.bicep` crea Foundry y modelos 
 No ejecutes la primera contra un entorno que solo quieres reutilizar. La conexión de telemetría
 se completa después con [la plantilla del exportador](infra/gateway-telemetry.bicep).
 
-## Qué hay y qué no
+## Qué incluye
 
 | Pieza | Cómo se despliega aquí | Por qué |
 |---|---|---|
-| Cuenta Foundry, proyecto y despliegues de modelo | Bicep declarativo | Es el plano de datos. Tiene que ser revisable y repetible. |
+| Cuenta Foundry, proyecto y despliegues de modelo | Bicep declarativo | Para crear un backend nuevo si todavía no tienes uno. |
 | Identidad administrada y asignación de rol | Bicep, con el GUID del rol como parámetro | El id y los permisos del rol se revisan en la suscripción destino. |
 | Gateway y conexión a Foundry existente | `infra/gateway-existing.bicep` | Raíz `2026-11-01`, configuración hija `2025-09-01-preview`. Sin cuentas ni modelos nuevos. |
 | Application Insights y Log Analytics | [Módulo de observabilidad](infra/modules/observability.bicep), incluido por defecto en la plantilla del gateway | OTLP habilitado y logs con 30 días de retención y límite diario de 1 GB configurables. |
@@ -28,7 +25,7 @@ se completa después con [la plantilla del exportador](infra/gateway-telemetry.b
 | Dashboard compartido de Azure Portal | Módulo de observabilidad | Cuatro paneles KQL: peticiones, códigos HTTP, latencia y tokens reportados en logs. |
 | Configuración interactiva | Portal del gateway o extensión `az aigateway` | No confundir las herramientas del recurso nuevo con `az apim` del servicio clásico. |
 | Clientes de verificación | C# sobre .NET 10 y Python | Comprueban enrutado y contabilidad de tokens, no solo que el modelo contesta. |
-| Pruebas | xUnit y scripts de contrato | Cubren la frontera, no el camino feliz. |
+| Pruebas | xUnit y scripts de contrato | Autenticación, alias, consumo de tokens y respuestas de error. |
 
 ## Estructura
 
@@ -49,7 +46,7 @@ scripts/
   02-smoke-test.sh                 una llamada, tres verificaciones
   02-smoke-test.ps1                verificación y contrato nativos de PowerShell 7
   03-create-lab-user.ps1            alta opcional de una cuenta nativa de Entra
-  04-prepare-publication.ps1        revisión de solo lectura, sin ZIP ni otros artefactos
+  04-prepare-publication.ps1        comprobación de datos sensibles en el repositorio
   publication-redact.js            máscaras opacas para capturas de navegador
 src/
   AiGateway.Core/                  GatewayClient, contratos y traducción de errores
@@ -72,6 +69,7 @@ docs/
 ## Requisitos y primer uso
 
 - Una suscripción Azure propia, acceso a AI Gateway en vista previa y cuota para el modelo elegido.
+- Una cuenta organizativa de Microsoft Entra si vas a utilizar el portal de AI Gateway.
 - Git, Azure CLI con Bicep, PowerShell 7, .NET SDK 10 y Python 3.12, la versión usada en CI.
 - Bash y `jq` si utilizas los scripts `.sh`; Windows también tiene una ruta PowerShell.
 - Permisos para crear recursos y asignar roles sobre Foundry y la regla de recogida de datos (DCR).
@@ -120,11 +118,11 @@ az deployment group create --name gateway-lab --mode Incremental `
   --template-file infra/gateway-existing.bicep --parameters $ParametersFile
 ```
 
-La plantilla no entrega ninguna clave como salida. Publica `gatewayBaseUrl`, `model`, los
+Las salidas de la plantilla incluyen `gatewayBaseUrl`, `model`, los
 metadatos del backend, `runtimeKeyId`, `foundryRoleAssignmentId` y las referencias de observabilidad,
-incluida `dashboardUrl`. Son salidas para tu entorno, no datos que debas subir a GitHub.
-La clave caduca en la siguiente
-medianoche UTC: la API probada conserva el día de caducidad y descarta la hora. Verifica siempre la fecha devuelta.
+incluida `dashboardUrl`. El valor de la clave se consulta aparte.
+La clave temporal caduca en la siguiente medianoche UTC: en esta versión de la API,
+la fecha de caducidad conserva el día pero descarta la hora.
 El rol se limita a la cuenta Foundry y autentica el backend con identidad administrada;
 no se cambian las opciones de autenticación ni la red de la cuenta existente.
 
@@ -189,8 +187,7 @@ az deployment group create --subscription $Subscription --resource-group $Resour
 ```
 
 Si falla justo después de asignar el rol, comprueba los permisos y repite el último despliegue
-cuando termine la propagación de RBAC. No añadas claves de instrumentación ni connection strings
-para sortear un problema de identidad administrada.
+cuando termine la propagación de RBAC.
 
 ### Consultar el dashboard
 
@@ -220,11 +217,10 @@ La configuración deshabilita la autenticación local de Application Insights, u
 y deja `payloadCapture: false`, sin claims adicionales. Los metadatos técnicos aún pueden identificar
 recursos o consumidores: limita el acceso a los logs.
 
-**Estado de la evidencia:** la ampliación se desplegó y verificó el 9 de noviembre de 2026.
-Una inferencia nueva consumió 18 tokens; Log Analytics recibió un log y siete spans, con una única
-petición de servidor. Las tres capturas reales están en [el artículo](docs/articulo.md) y los datos
-anonimizados en [el resumen de observabilidad](docs/evidencia/observability-summary.json).
-Las capturas verifican logs, trazas y paneles; no acreditan una consulta PromQL ni facturación.
+En la prueba del 9 de noviembre de 2026, una petición consumió 18 tokens y dejó un log y siete
+spans en Log Analytics. Las capturas y los resultados están en [el artículo](docs/articulo.md)
+y en [el resumen de observabilidad](docs/evidencia/observability-summary.json).
+Las consultas PromQL y la conciliación de costes quedan fuera de este ejemplo.
 Referencias: [observabilidad](https://ai.gateway.azure.com/docs/observability)
 y [laboratorio oficial](https://github.com/Azure/aigateway/tree/main/labs/13-monitoring).
 
@@ -324,16 +320,15 @@ bash tests/02-gateway-contract.sh
 
 Las pruebas verifican que el modo actual envía solo `Authorization: Bearer` y que el modo legacy
 envía solo `api-key`. La aplicación solo posee una credencial del gateway, nunca una de Foundry.
-Las pruebas locales no demuestran conectividad real ni deben presentarse como una ejecución contra Azure.
-El contrato de observabilidad no verifica disponibilidad regional, RBAC real, ingesta ni representación
-de los paneles en el portal.
+CI prueba los clientes con transportes simulados y comprueba las plantillas. Para probar la conexión
+con Azure, ejecuta el smoke test o el contrato del gateway con la configuración de tu entorno.
 
 Otro riesgo es el desvío silencioso: si el gateway tiene un alias o una política de fallback, puedes
 pedir un alias y que te atienda otro backend. La respuesta llega, el contenido es razonable y la prueba
 parece correcta. `AI_GATEWAY_EXPECTED_MODEL` permite comparar con el identificador real esperado sin
 confundir un alias legítimo con fallback. HTTP 200, contenido no vacío y tokens consistentes son obligatorios.
 
-## La decisión que condiciona todo lo demás
+## Autenticación del backend
 
 `disableLocalAuth: true` en `infra/main.bicep` deshabilita las claves locales de una cuenta nueva.
 No debe aplicarse a una cuenta existente sin revisar qué otros consumidores dependen de sus claves.
@@ -342,34 +337,14 @@ La plantilla aditiva usa identidad administrada aunque el backend conserve sus c
 El rol `Foundry User` es el recomendado por el producto y se resuelve en la suscripción; no equivale
 a un permiso exclusivo de inferencia. Su ámbito se limita a la cuenta Foundry.
 
-## Capturas reales
+## Capturas y resultados
 
-Las capturas incluidas en [el artículo](docs/articulo.md) ya ocultan los identificadores del entorno.
-No son maquetas ni contienen resultados de inferencia nuevos. Conservan estados, regiones y modelos públicos.
+El [artículo](docs/articulo.md) recorre el despliegue, las llamadas al modelo y la configuración
+de observabilidad con siete capturas. Los nombres e identificadores del entorno están ocultos.
+La prueba inicial consumió 473 tokens; después se hizo otra llamada de 18 tokens para comprobar
+la llegada de datos a Log Analytics y al dashboard.
 
-| Captura | Evidencia que debe verse | Qué ocultar |
-|---|---|---|
-| Gateway | Región y estado | Nombre, hostname, grupo, suscripción y perfil |
-| Identidad y backend | Identidad habilitada y proveedor Foundry | GUID, endpoint, ID de recurso y nombres reales |
-| Modelos y alias | Alias de ejemplo, modelo público y API | Nombre identificativo del proveedor |
-| Contrato en terminal | 401 sin clave, 401 clave mala, 404 modelo ausente, 200 válido, modelo y tokens | Claves, rutas locales y datos de infraestructura |
-| Clientes | Modelo solicitado, modelo servido, contenido, latencia y tokens | Headers y cualquier identificador del entorno |
-
-El navegador integrado tiene una sesión distinta de Azure CLI: puede pedir otro inicio de sesión.
-No captures pantallas de creación/revelado de claves, variables de entorno completas, headers,
-historial con credenciales, herramientas de red ni volcados de depuración.
-El JSON de `-OutputPath` incluye comprobaciones y uso, no credenciales ni headers.
-Los originales de `evidence/`, el plan y parámetros privados de `.azure/`, la configuración
-de `.vscode/` y los archivos `*.local.*` no forman parte del repositorio público.
-
-El portal de AI Gateway requiere una cuenta de trabajo o escuela de Microsoft Entra. Una cuenta personal puede
-funcionar en Azure CLI y ser rechazada por este inicio de sesión web. Para consultar y capturar,
-usa una cuenta organizativa con acceso de lectura al ámbito necesario, sin asignarle roles administrativos.
-
-Las cuatro capturas conservadas pertenecen a la ejecución original sin observabilidad. Las plantillas
-nuevas no convierten esas imágenes en evidencia de ingesta o métricas integradas. Las tres capturas
-adicionales muestran Application Insights vinculado, una consulta real de Log Analytics y el dashboard
-con sus cuatro paneles. Se revisaron visualmente ocultando nombres, IDs, perfil y datos de instrumentación.
+## Limpieza
 
 Para limpiar, revoca la clave temporal y elimina primero el exportador, después el gateway creado,
 su asignación de rol en Foundry y el dashboard. Si son exclusivos del laboratorio, elimina Application
@@ -378,52 +353,31 @@ Conserva Foundry, sus despliegues y el grupo compartido. La caducidad de la clav
 
 ## Publicación
 
-El [artículo](docs/articulo.md) incluye siete capturas anonimizadas: cuatro de la ejecución original
-y tres de la ampliación de observabilidad, con sus resultados separados.
-El ejemplo se publica en [jmfloreszazo/ai-gateway-preview-lab](https://github.com/jmfloreszazo/ai-gateway-preview-lab)
-para que otros usuarios lo clonen o hagan fork. Conserva la licencia y revisa el contenido que vas a versionar.
+El código está en [jmfloreszazo/ai-gateway-preview-lab](https://github.com/jmfloreszazo/ai-gateway-preview-lab).
+Si vas a compartir cambios, puedes ejecutar el control de datos sensibles:
 
 ```powershell
 ./scripts/04-prepare-publication.ps1 -CheckOnly
-# Solo después de revisar visualmente todas las imágenes:
-./scripts/04-prepare-publication.ps1 -ImagesReviewed
 ```
 
-Ambos comandos son de solo lectura: no crean ZIP, manifiestos ni evidencias y no publican en GitHub.
-El control no ejecuta Azure ni hace inferencias. No sustituye la revisión visual ni un escáner general
-de secretos; sin la lista local de identificadores solo aplica comprobaciones genéricas.
-
-Publica con Git o GitHub Desktop respetando [.gitignore](.gitignore). Si partes de una carpeta sin
-repositorio, puedes preparar el contenido así y revisarlo antes del commit:
-
-```powershell
-git init -b main
-git add .gitignore .github AiGateway.sln Directory.Build.props LICENSE README.md infra scripts src tests docs
-git status --short
-git diff --cached --stat
-git diff --cached
-```
-
-No subas la carpeta completa por la web ni uses `git add -f`: podrías incluir archivos ignorados.
-No publiques claves, archivos `.local.*`, `.env*`, salidas reales de despliegue, evidencias privadas
-ni `bin`/`obj`. Cada usuario debe configurar su tenant, suscripción, grupo, modelos y permisos.
+Mantén las credenciales y los parámetros de tu suscripción en archivos locales, fuera de Git.
 
 ## Aviso de vista previa
 
 A fecha de la revisión del 9 de noviembre de 2026, la documentación pública indica East US 2 y
 Sweden Central para la vista previa. La página de precios indica que los detalles están pendientes:
 no se debe asumir coste cero. Inferencia, ingesta, retención y métricas pueden generar cargos.
-Úsalo con cargas no críticas y plan de limpieza; no atribuyas al recurso nuevo las garantías del APIM clásico.
+Este laboratorio está pensado para pruebas, no como una configuración de producción.
 
 La API actual puede compilar con avisos BCP081 si Bicep aún no dispone de sus tipos. Eso no es una
 validación completa de propiedades: contrasta el OpenAPI publicado y exige validación remota y `what-if`.
 Los campos nuevos de OTLP tampoco están todos en los tipos locales de Bicep: la definición de
 Application Insights sigue el patrón `union()` del ejemplo oficial y el exportador los lee con `any()`.
 Las limitaciones documentadas del recurso nuevo incluyen ausencia de private endpoint de entrada
-y de la política `contentSafety`. No afirmes que esas capacidades están probadas por este laboratorio.
+y de la política `contentSafety`.
 
-La clave de runtime tiene alcance de gateway. Si necesitas acotar consumidores a un subconjunto de
-assets, hoy la frontera es desplegar un gateway por dominio de confianza.
+Las claves de runtime dan acceso al gateway completo. Si necesitas separar el acceso de distintas
+aplicaciones, utiliza gateways diferentes.
 
 ## Licencia
 
